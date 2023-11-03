@@ -1,75 +1,61 @@
 #!/usr/bin/python3
-
+"""Solution to the N-Queens puzzle"""
 import sys
 
-class Queen:
-    def __init__(self, row, col):
-        self.row = row
-        self.col = col
 
-    def is_attacking(self, other):
-        """Returns True if this queen is attacking the other queen, False otherwise."""
-        return self.row == other.row or self.col == other.col or abs(self.row - other.row) == abs(self.col - other.col)
+def print_board(board, n):
+    """prints allocated possitions to the queen"""
+    b = []
 
-class NQueensSolver:
-    def __init__(self, n):
-        self.n = n
-        self.board = [[None for i in range(n)] for j in range(n)]
-        self.solutions = []
+    for i in range(n):
+        for j in range(n):
+            if j == board[i]:
+                b.append([i, j])
+    print(b)
 
-    def solve(self):
-        """Solves the N queens problem and returns a list of all solutions."""
-        self.place_queen(0)
-        return self.solutions
 
-    def place_queen(self, col):
-        """Attempts to place a queen in the given column. If successful, recursively places the next queen in the next column. If unsuccessful, backtracks."""
-        if col == self.n:
-            # All queens have been placed successfully.
-            self.solutions.append([Queen(row, col) for row in range(self.n)])
-            return
-
-        for row in range(self.n):
-            if self.is_safe_to_place_queen(row, col):
-                # Place the queen in the given row and column.
-                self.board[row][col] = Queen(row, col)
-
-                # Recursively place the next queen in the next column.
-                self.place_queen(col + 1)
-
-                # Backtrack if no solution was found in the next column.
-                if not self.solutions:
-                    self.board[row][col] = None
-
-    def is_safe_to_place_queen(self, row, col):
-        """Returns True if it is safe to place a queen in the given row and column, False otherwise."""
-        for other in self.board:
-            if other is not None and other.is_attacking(Queen(row, col)):
-                return False
-
+def safe_position(board, i, j, r):
+    """Determines whether the position is safe for the queen"""
+    if (board[i] == j) or (board[i] == j - i + r) or (board[i] == i - r + j):
         return True
+    return False
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: nqueens N")
-        sys.exit(1)
 
-    try:
-        n = int(sys.argv[1])
-    except ValueError:
-        print("N must be a number")
-        sys.exit(1)
+def determine_positions(board, row, n):
+    """Recursively finds all safe positions where the queen can be allocated"""
+    if row == n:
+        print_board(board, n)
 
-    if n < 4:
-        print("N must be at least 4")
-        sys.exit(1)
+    else:
+        for j in range(n):
+            allowed = True
+            for i in range(row):
+                if safe_position(board, i, j, row):
+                    allowed = False
+            if allowed:
+                board[row] = j
+                determine_positions(board, row + 1, n)
 
-    solver = NQueensSolver(n)
-    solutions = solver.solve()
 
-    for solution in solutions:
-        print(solution)
+def create_board(size):
+    """Generates the board"""
+    return [0 * size for i in range(size)]
 
-if __name__ == "__main__":
-    main()
 
+if len(sys.argv) != 2:
+    print("Usage: nqueens N")
+    exit(1)
+
+try:
+    n = int(sys.argv[1])
+except BaseException:
+    print("N must be a number")
+    exit(1)
+
+if (n < 4):
+    print("N must be at least 4")
+    exit(1)
+
+board = create_board(int(n))
+row = 0
+determine_positions(board, row, int(n))
