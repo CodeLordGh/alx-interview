@@ -1,68 +1,75 @@
 #!/usr/bin/python3
-"""
-Solution to the nqueens problem
-"""
+
 import sys
 
+class Queen:
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
 
-def backtrack(r, n, cols, pos, neg, board):
-    """
-    backtrack function to find solution
-    """
-    if r == n:
-        res = []
-        for l in range(len(board)):
-            for k in range(len(board[l])):
-                if board[l][k] == 1:
-                    res.append([l, k])
-        print(res)
-        return
+    def is_attacking(self, other):
+        """Returns True if this queen is attacking the other queen, False otherwise."""
+        return self.row == other.row or self.col == other.col or abs(self.row - other.row) == abs(self.col - other.col)
 
-    for c in range(n):
-        if c in cols or (r + c) in pos or (r - c) in neg:
-            continue
+class NQueensSolver:
+    def __init__(self, n):
+        self.n = n
+        self.board = [[None for i in range(n)] for j in range(n)]
+        self.solutions = []
 
-        cols.add(c)
-        pos.add(r + c)
-        neg.add(r - c)
-        board[r][c] = 1
+    def solve(self):
+        """Solves the N queens problem and returns a list of all solutions."""
+        self.place_queen(0)
+        return self.solutions
 
-        backtrack(r+1, n, cols, pos, neg, board)
+    def place_queen(self, col):
+        """Attempts to place a queen in the given column. If successful, recursively places the next queen in the next column. If unsuccessful, backtracks."""
+        if col == self.n:
+            # All queens have been placed successfully.
+            self.solutions.append([Queen(row, col) for row in range(self.n)])
+            return
 
-        cols.remove(c)
-        pos.remove(r + c)
-        neg.remove(r - c)
-        board[r][c] = 0
+        for row in range(self.n):
+            if self.is_safe_to_place_queen(row, col):
+                # Place the queen in the given row and column.
+                self.board[row][col] = Queen(row, col)
 
+                # Recursively place the next queen in the next column.
+                self.place_queen(col + 1)
 
-def nqueens(n):
-    """
-    Solution to nqueens problem
-    Args:
-        n (int): number of queens. Must be >= 4
-    Return:
-        List of lists representing coordinates of each
-        queen for all possible solutions
-    """
-    cols = set()
-    pos_diag = set()
-    neg_diag = set()
-    board = [[0] * n for i in range(n)]
+                # Backtrack if no solution was found in the next column.
+                if not self.solutions:
+                    self.board[row][col] = None
 
-    backtrack(0, n, cols, pos_diag, neg_diag, board)
+    def is_safe_to_place_queen(self, row, col):
+        """Returns True if it is safe to place a queen in the given row and column, False otherwise."""
+        for other in self.board:
+            if other is not None and other.is_attacking(Queen(row, col)):
+                return False
 
+        return True
 
-if __name__ == "__main__":
-    n = sys.argv
-    if len(n) != 2:
+def main():
+    if len(sys.argv) != 2:
         print("Usage: nqueens N")
         sys.exit(1)
+
     try:
-        nn = int(n[1])
-        if nn < 4:
-            print("N must be at least 4")
-            sys.exit(1)
-        nqueens(nn)
+        n = int(sys.argv[1])
     except ValueError:
         print("N must be a number")
         sys.exit(1)
+
+    if n < 4:
+        print("N must be at least 4")
+        sys.exit(1)
+
+    solver = NQueensSolver(n)
+    solutions = solver.solve()
+
+    for solution in solutions:
+        print(solution)
+
+if __name__ == "__main__":
+    main()
+
