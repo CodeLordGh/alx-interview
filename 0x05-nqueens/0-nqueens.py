@@ -6,44 +6,41 @@ import sys
 
 
 def generate_solutions(row, column):
-  solution = [[]]
-  for queen in range(row):
-    solution = place_queen(queen, column, solution)
-  return solution
+  solution = [[]]
+  for queen in range(row):
+    solution = place_queen(queen, column, solution)
+  return solution
 
 
 def place_queen(queen, column, prev_solution):
-  safe_position = []
-  for array in prev_solution:
-    for x in range(column):
-      if is_safe(queen, x, array):
-        safe_position.append(array + [x])
-  return safe_position
+  safe_position = []
+  for array in prev_solution:
+    for x in range(column):
+      if is_safe(queen, x, array):
+        safe_position.append(array + [x])
+  return safe_position
 
 
 def is_safe(q, x, array):
-  if x in array:
-    return (False)
-  else:
-    return all(abs(array[column] - x) != q - column
-          for column in range(q))
+  if x in array:
+    return (False)
+  else:
+    return all(abs(array[column] - x) != q - column
+          for column in range(q))
 
 
 def init():
-  if not len(sys.argv) > 1:
-    print("Usage: nqueens N")
-    sys.exit(1)
-
-    try:
+  if len(sys.argv) != 2:
+    print("Usage: nqueens N")
+    sys.exit(1)
+    if sys.argv[1].isdigit():
         n = int(sys.argv[1])
-    except ValueError:
+    else:
         print("N must be a number")
-        sys.exit(2)
-
+        sys.exit(1)
     if n < 4:
         print("N must be at least 4")
-        sys.exit(3)
-
+        sys.exit(1)
     return (n)
 
 
