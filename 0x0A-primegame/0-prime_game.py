@@ -1,35 +1,114 @@
 #!/usr/bin/python3
+""" 0x0A. Prime Game task 0. Prime Game
 
-def isPrime(n):
-    if n < 2:
-        return False
-    if n == 2:
-        return True
-    if n % 2 == 0:
-        return False
-    for i in range(3, int(n**0.5) + 1, 2):
-        if n % i == 0:
-            return False
-    return True
+"""
+
+
+def findPrimesToN(n):
+    """Returns list of primes up to parameter value n, in ascending order.
+
+    Args:
+        n (int): upper bound on list of primes returned
+
+    Return:
+        primes (list) of (int): list of primes to n, or
+        (None): on failure
+
+    """
+
+    if (type(n) is not int or n < 0):
+        return None
+
+    # logically primes should be a set, but we want it to remain ordered
+    primes = []
+    for candidate in range(2, n + 1):
+        prime = True
+        for divisor in range(2, candidate):
+            if (candidate % divisor == 0):
+                prime = False
+                break
+        if (prime):
+            primes.append(candidate)
+    return primes
+
 
 def isWinner(x, nums):
-    player = 0
-    count = [0, 0]
-    for _ in range(x):
-        if not nums: # check if the nums list is empty
-            break
-        num = nums.pop(0)
-        primes = [i for i in range(2, num + 1) if isPrime(i)]
-        if player == 0:
-            for prime in primes:
-                while prime in nums:
-                    nums.remove(prime)
-                    for multiple in range(prime + prime, num + 1, prime):
-                        if multiple in nums:
-                            nums.remove(multiple)
-            count[player] += len(nums) > 0
+    """Simulates a game of primes between Ben and Maria, returns the winner.
+
+    For each round of the game, players are given a set of consecutive integers
+    starting from 1 up to and including n, and take turns choosing a prime
+    number from the set and removing that number and its multiples from the
+    set. The player that cannot make a move loses the game.
+
+    Args:
+        x (int): number of rounds
+        nums (list) of (int): array of n values for each round of the game
+
+    Return:
+        (str): name of the player that won the most rounds, or
+        (None): on failure or no winner found
+
+    """
+    if (type(nums) is not list or not all([type(n) is int for n in nums]) or
+            not all([n > -1 for n in nums])):
+        return None
+
+    if (type(x) is not int or x != len(nums)):
+        return None
+
+    nums.sort()
+    primes = findPrimesToN(nums[-1])
+    if (primes is None):
+        return None
+
+    Maria_wins = 0
+    Ben_wins = 0
+    for n in nums:
+        prime_ct = 0
+        for prime in primes:
+            if (prime <= n):
+                prime_ct += 1
+            else:
+                break
+        # Since all multiples of a prime are removed when a player chooses,
+        # primes are the only meaningful strategic units. Therefore if Maria
+        # always goes first, she wins games with an odd number of primes from
+        # 2 to n, and Ben will win games with an even number.
+        if prime_ct % 2 == 0:
+            Ben_wins += 1
         else:
-            nums = [i for i in nums if isPrime(i)]
-            count[player] += len(nums) > 0
-        player = 1 - player
-    return "Maria" if count[0] > count[1] else "Ben" if count[0] < count[1] else None
+            Maria_wins += 1
+
+    if (Maria_wins > Ben_wins):
+        return "Maria"
+    elif (Ben_wins > Maria_wins):
+        return "Ben"
+    else:
+        return None
+
+
+'''
+FYI: Pythonic Sieve of Eratosthenes
+
+https://stackoverflow.com/questions/2068372/
+    fastest-way-to-list-all-primes-below-n/3035188#3035188
+
+def primes(n):
+    """ Returns  a list of primes < n """
+    sieve = [True] * n
+    for i in range(3, int(n**0.5) + 1, 2):
+        if sieve[i]:
+            sieve[i * i::2 * i] = [False] * ((n - i * i - 1) // (2 * i) + 1)
+    return [2] + [i for i in range(3, n, 2) if sieve[i]]
+
+Modified to include n in range:
+def _primes(n):
+    """ Returns  a list of primes <= n """
+    sieve = [True] * (n + 1)
+    for i in range(3, int((n + 1)**0.5) + 1, 2):
+        if sieve[i]:
+            sieve[i * i::2 * i] = [False] * (((n + 1) - i * i - 1) //
+                                             (2 * i) + 1)
+    return [2] + [i for i in range(3, n + 1, 2) if sieve[i]]
+
+'''
